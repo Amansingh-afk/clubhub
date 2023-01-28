@@ -4,13 +4,16 @@
   "description": "A full-stack web application for managing college clubs, built using the MERN stack. The application features include user authentication, club creation and management, event creation and management, and integration with cloudinary for storing and managing photos. The project utilizes Redux for state management and JWT for user authentication. The project is designed to improve communication and organization within college clubs, making it easier for students to get involved in campus activities.",
   "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start" : "node server/server.js",
+    "dev" : "nodemon server/server.js"
   },
   "author": "grp_no_7",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "mongoose": "^6.9.0"
+    "mongoose": "^6.9.0",
+    "nodemon": "^2.0.20"
   }
 }
