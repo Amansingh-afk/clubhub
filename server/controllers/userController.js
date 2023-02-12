@@ -4,6 +4,7 @@ const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const bcrypt = require("bcrypt");
 
 const User = require("../models/userModel");
+const sendToken = require("../utils/jwttoken");
 
 // Create user
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
@@ -24,7 +25,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     },
   });
 
-  res.status(201).json({ success: true, user });
+  sendToken(user, 201, res);
 });
 
 // Login user
@@ -46,13 +47,22 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Invalid Credentials", 401));
   }
 
-  res.status(200).json({
-    success: true,
-    user,
-  });
+  sendToken(user, 200, res);
 });
 
 // Logout
+exports.logout = catchAsyncErrors(async (req, res, next) => {
+  res.cookie("token", null),
+    {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+    };
+
+  res.status(200).json({
+    success: true,
+    message: "logged out",
+  });
+});
 // forgot password
 
 // Get user details, profile details
