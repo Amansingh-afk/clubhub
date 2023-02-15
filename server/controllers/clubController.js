@@ -24,8 +24,11 @@ exports.createClub = catchAsyncErrors(async (req, res, next) => {
 
 // get club detail when admin logins
 exports.getClubDetail = catchAsyncErrors(async (req, res, next) => {
-  const club = await Club.findById(req.user.id); // where admin_id = req.user.id
+  const club = await Club.findOne({ admin_id: req.user.id }); // where admin_id = req.user.id
 
+  if (!club) {
+    return next(new ErrorHandler("Club not found", 404));
+  }
   res.status(200).json({
     success: true,
     club,
@@ -36,10 +39,10 @@ exports.getClubDetail = catchAsyncErrors(async (req, res, next) => {
 exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
   const newClubData = {
     name: req.body.name,
-    admin_id: req.body.admin_id,
+    description: req.body.description,
   };
 
-  const club = await Club.findByIdAndUpdate(req.body.club_id, newClubData, {
+  const club = await Club.findByIdAndUpdate(req.params.club_id, newClubData, {
     new: true,
     runValidators: true,
     useFindAndModify: false,
@@ -50,22 +53,28 @@ exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// get all members of a club
-exports.getAllMembers = catchAsyncErrors(async (req, res, next) => {
-  const members = await Member.find(); // where club_id = req.body.club_id
+// delete a club
+exports.deleteClub = catchAsyncErrors(async (req, res, next) => {
+  const club = await Club.findById(req.params.club_id);
+  if (!club) {
+    return next(
+      new ErrorHandler(`club doesn't exist with club id: ${req.params.club_id}`)
+    );
+  }
+  await club.remove();
 
   res.status(200).json({
     success: true,
-    members,
+    msg: "Club deleted successfully",
   });
 });
 
-// get all events of a club
-exports.getAllEvents = catchAsyncErrors(async (req, res, next) => {
-  const events = await Event.find(); // where where club_id = req.body.club_id
+// get all clubs
+exports.getAllClubs = catchAsyncErrors(async (req, res, next) => {
+  const clubs = await Club.find();
 
-  req.status(200).json({
+  res.status(200).json({
     success: true,
-    events,
+    clubs,
   });
 });
