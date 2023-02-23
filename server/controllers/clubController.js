@@ -42,7 +42,7 @@ exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
     description: req.body.description,
   };
 
-  const club = await Club.findByIdAndUpdate(req.params.club_id, newClubData, {
+  const club = await Club.findByIdAndUpdate(req.params.club-id, newClubData, {
     new: true,
     runValidators: true,
     useFindAndModify: false,
@@ -55,7 +55,7 @@ exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
 
 // delete a club
 exports.deleteClub = catchAsyncErrors(async (req, res, next) => {
-  const club = await Club.findById(req.params.club_id);
+  const club = await Club.findById(req.params.club-id);
   if (!club) {
     return next(
       new ErrorHandler(`club doesn't exist with club id: ${req.params.club_id}`)

@@ -18,14 +18,8 @@ router
   .get(isLoggedIn, authorizedRoles("club_admin"), getClubDetail);
 
 router
-  .route("/club/update")
-  .post(
-    isLoggedIn,
-    authorizedRoles("club_admin", "super_admin"),
-    updateClubDetail
-  );
-router
-  .route("/club/delete")
+  .route("/manage/:club-id")
+  .put(isLoggedIn,authorizedRoles("club_admin", "super_admin"),updateClubDetail)
   .delete(isLoggedIn, authorizedRoles("super_amdin"), deleteClub);
 
 router.route("/clubs").get(isLoggedIn, getAllClubs);
