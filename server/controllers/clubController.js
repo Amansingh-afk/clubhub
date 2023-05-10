@@ -62,7 +62,7 @@ exports.deleteClub = catchAsyncErrors(async (req, res, next) => {
     );
   }
   await club.remove();
-
+ 
   res.status(200).json({
     success: true,
     msg: "Club deleted successfully",

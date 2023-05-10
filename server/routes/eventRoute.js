@@ -7,6 +7,7 @@ const {
   createEvent,
   getEventByClubId,
   deleteEvent,
+  updateEvent,
 } = require("../controllers/eventController");
 const { isLoggedIn, authorizedRoles } = require("../middlewares/auth");
 
