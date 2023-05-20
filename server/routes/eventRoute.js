@@ -1,13 +1,11 @@
 const express = require("express");
 const {
-  updateClubDetail,
-  getAllClubs,
-} = require("../controllers/clubController");
-const {
   createEvent,
   getEventByClubId,
   deleteEvent,
   updateEvent,
+  getAllEvents,
+  getEventDetail,
 } = require("../controllers/eventController");
 const { isLoggedIn, authorizedRoles } = require("../middlewares/auth");
 
@@ -15,14 +13,15 @@ const router = express.Router();
 
 router
   .route("/create-event")
-  .post(isLoggedIn, authorizedRoles("club_admin"), createEvent);
+  .post(isLoggedIn, authorizedRoles("admin"), createEvent);
 router
   .route("/club/events")
-  .get(isLoggedIn, authorizedRoles("club-admin"), getEventByClubId);
+  .get(isLoggedIn, authorizedRoles("admin"), getEventByClubId);
 router
-  .route("/club/event/:event-id")
-  .put(isLoggedIn, authorizedRoles("club_admin"), updateEvent)
-  .delete(isLoggedIn, authorizedRoles("club_admin"), deleteEvent);
+  .route("/club/event/:eventId")
+  .put(isLoggedIn, authorizedRoles("admin"), updateEvent)
+  .delete(isLoggedIn, authorizedRoles("admin"), deleteEvent)
+  .get(isLoggedIn, getEventDetail);
   
-router.route("/events").get(isLoggedIn, getAllClubs);
+router.route("/events").get(isLoggedIn, getAllEvents);
 module.exports = router;

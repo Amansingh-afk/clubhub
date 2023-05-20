@@ -5,17 +5,25 @@ const Member = require("../models/memberModel");
 const User = require("../models/userModel");
 
 exports.subscribeMembership = catchAsyncErrors(async (req, res, next) => {
-  const userId = req.user.id;
-  const clubId = req.params.club - id;
+  const { userId, clubId } = req.body;
 
-  await Member.create({
-    userId,
-    clubId,
-  });
+  const user = await Member.findOne({ user_id: userId, club_id: clubId });
 
-  res.status(201).json({
-    success: true,
-  });
+  if (!user) {
+    await Member.create({
+      user_id: userId,
+      club_id: clubId,
+    });
+
+    res.status(201).json({
+      success: true,
+    });
+  } else {
+    res.status(400).json({
+      success: false,
+      error: "Already a member!",
+    });
+  }
 });
 
 exports.unsubscribeMembership = catchAsyncErrors(async (req, res, next) => {
@@ -25,15 +33,5 @@ exports.unsubscribeMembership = catchAsyncErrors(async (req, res, next) => {
   await Member.findByIdAndDelete(userId, clubId);
   res.status(200).json({
     success: true,
-  });
-});
-
-exports.getAllMembersForClub = catchAsyncErrors(async (req, res, next) => {
-  // find where clubId matches
-  const ClubId = req.params.club-id;
-  const members = await Member.find();
-  res.status(200).json({
-    success: true,
-    members,
   });
 });

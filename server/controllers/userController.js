@@ -8,11 +8,11 @@ const sendToken = require("../utils/jwttoken");
 
 // Create user
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  const { name, username, email, password, course, semester, roll_no } =
+  const { fullname, username, email, password, course, semester, roll_no } =
     req.body;
 
   const user = await User.create({
-    name,
+    name: fullname,
     username,
     email,
     password,
