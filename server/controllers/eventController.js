@@ -2,6 +2,7 @@ const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 
 const Club = require("../models/clubModel");
 const Event = require("../models/eventModel");
+const Participant = require("../models/participantModel");
 const ErrorHandler = require("../utils/errorhandler");
 
 // create event
@@ -44,15 +45,20 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
     return res.status(404).json({ error: "Event not found." });
   }
 
-  const formattedDate = event.scheduled_date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
+  const club = await Club.findOne({ _id: event.club_id }).exec();
+  if (!club) {
+    return res.status(404).json({ error: "Club not found." });
+  }
+  const formattedDate = event.scheduled_date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 
   const formattedEvent = {
     ...event._doc,
-    scheduled_date: formattedDate
+    club_name: club.name,
+    scheduled_date: formattedDate,
   };
 
   return res.status(200).json({
@@ -63,15 +69,11 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
 
 // update event
 exports.updateEvent = catchAsyncErrors(async (req, res, next) => {
-  const eventData = {
-    name: req.body.name,
-    description: req.body.description,
-    scheduled_date: req.body.scheduled_date,
-  };
+  const { name, description, scheduled_date } = req.body;
 
   const event = await Event.findByIdAndUpdate(
-    req.params.event - id,
-    eventData,
+    req.params.eventId,
+    { name, description, scheduled_date },
     {
       new: true,
       runValidators: true,
@@ -86,7 +88,7 @@ exports.updateEvent = catchAsyncErrors(async (req, res, next) => {
 
 // delete a event
 exports.deleteEvent = catchAsyncErrors(async (req, res, next) => {
-  const event = await Event.findById(req.params.event - id);
+  const event = await Event.findById(req.params.eventId);
   if (!event) {
     return next(
       new ErrorHandler(`Event doesn't exist with id: ${req.params.event - id}`)
@@ -126,5 +128,31 @@ exports.getAllEvents = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     events: formattedEvents,
+  });
+});
+
+exports.joinEvent = catchAsyncErrors(async (req, res, next) => {
+  const { clubId, eventId, userId } = req.body;
+
+  const participant = await Participant.findOne({
+    event_id: eventId,
+    user_id: userId,
+  });
+
+  if (participant) {
+    res.status(400).json({
+      success: false,
+      error: "Already participated in this event.",
+    });
+  }
+
+  await Participant.create({
+    event_id: eventId,
+    user_id: userId,
+    club_member_id: clubId,
+  });
+
+  res.status(201).json({
+    success: true,
   });
 });
