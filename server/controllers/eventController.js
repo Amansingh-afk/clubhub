@@ -1,5 +1,6 @@
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 
+const User = require("../models/userModel");
 const Club = require("../models/clubModel");
 const Event = require("../models/eventModel");
 const Participant = require("../models/participantModel");
@@ -38,6 +39,7 @@ exports.getEventByClubId = catchAsyncErrors(async (req, res, next) => {
 // get event details by event_id
 exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
   const eventId = req.params.eventId;
+  const userId = req.user.id;
 
   const event = await Event.findOne({ _id: eventId }).exec();
 
@@ -46,9 +48,22 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
   }
 
   const club = await Club.findOne({ _id: event.club_id }).exec();
+
   if (!club) {
     return res.status(404).json({ error: "Club not found." });
   }
+  const isAdmin = club.admin_id == userId;
+
+  const participants = await Participant.find({ event_id: eventId }).exec();
+
+  const participantUserIds = participants.map(
+    (participant) => participant.user_id
+  );
+
+  const participantData = await User.find({
+    _id: { $in: participantUserIds },
+  }).exec();
+
   const formattedDate = event.scheduled_date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -61,9 +76,15 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
     scheduled_date: formattedDate,
   };
 
+  const hasParticipated = participants.some(
+    (participant) => participant.user_id.toString() === userId
+  );
   return res.status(200).json({
     success: true,
+    isAdmin,
+    hasParticipated,
     event: formattedEvent,
+    participants: participantData,
   });
 });
 
@@ -154,5 +175,25 @@ exports.joinEvent = catchAsyncErrors(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
+  });
+});
+
+exports.leaveEvent = catchAsyncErrors(async (req, res, next) => {
+  const userId = req.user.id;
+  const eventId = req.params.eventId;
+
+  await Participant.findOneAndDelete({ user_id: userId, event_id: eventId });
+  res.status(200).json({
+    success: true,
+  });
+});
+
+exports.removeParticipant = catchAsyncErrors(async (req, res, next) => {
+  const { userId, eventId } = req.body;
+
+  await Participant.findOneAndDelete({ user_id: userId, event_id: eventId });
+  res.status(200).json({
+    success: true,
+    msg: 'yes'
   });
 });

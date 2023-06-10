@@ -23,5 +23,4 @@ router
   .delete(isLoggedIn, authorizedRoles("super_amdin"), deleteClub);
 
 router.route("/clubs").get(isLoggedIn, getAllClubs);
-
 module.exports = router;

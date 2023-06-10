@@ -60,6 +60,7 @@ exports.getClubDetail = catchAsyncErrors(async (req, res, next) => {
 // get single club details
 exports.getClubData = catchAsyncErrors(async (req, res, next) => {
   const clubId = req.params.clubId;
+  const userId = req.user.id;
 
   const club = await Club.findOne({ _id: clubId }).lean().exec();
 
@@ -69,6 +70,10 @@ exports.getClubData = catchAsyncErrors(async (req, res, next) => {
 
   const members = await Member.find({ club_id: clubId }).exec();
 
+  const memberUserIds = members.map(member => member.user_id);
+
+  const memberData = await User.find({ _id: { $in: memberUserIds } }).exec();
+
   const admin = await User.findOne({ _id: club.admin_id }).exec();
   club.admin = {
     _id: admin._id,
@@ -76,8 +81,11 @@ exports.getClubData = catchAsyncErrors(async (req, res, next) => {
     username: admin.username,
   };
 
-  res.status(200).json({ club, members });
+  const isMember = members.some(member => member.user_id.toString() === userId);
+
+  res.status(200).json({ club, members: memberData, isMember });
 });
+
 
 // update club detail
 exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
@@ -144,3 +152,4 @@ exports.getAllClubs = catchAsyncErrors(async (req, res, next) => {
     clubs: clubsWithAdminName,
   });
 });
+

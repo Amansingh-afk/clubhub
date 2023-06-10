@@ -28,9 +28,18 @@ exports.subscribeMembership = catchAsyncErrors(async (req, res, next) => {
 
 exports.unsubscribeMembership = catchAsyncErrors(async (req, res, next) => {
   const userId = req.user.id;
-  const clubId = req.params.club - id;
+  const clubId = req.params.clubId;
 
-  await Member.findByIdAndDelete(userId, clubId);
+  await Member.findOneAndDelete({ user_id: userId, club_id: clubId });
+  res.status(200).json({
+    success: true,
+  });
+});
+
+exports.removeMember = catchAsyncErrors(async (req, res, next) => {
+  const { userId, clubId } = req.body;
+
+  await Member.findOneAndDelete({ user_id: userId, club_id: clubId });
   res.status(200).json({
     success: true,
   });

@@ -7,6 +7,8 @@ const {
   getAllEvents,
   getEventDetail,
   joinEvent,
+  leaveEvent,
+  removeParticipant,
 } = require("../controllers/eventController");
 const { isLoggedIn, authorizedRoles } = require("../middlewares/auth");
 
@@ -29,4 +31,8 @@ router.route("/events").get(isLoggedIn, getAllEvents);
 router
   .route("/event/join")
   .post(isLoggedIn, authorizedRoles("student"), joinEvent);
+
+router.route("/event/leave/:eventId").delete(isLoggedIn, leaveEvent);
+
+router.route("/event/remove").delete(isLoggedIn, removeParticipant);
 module.exports = router;
