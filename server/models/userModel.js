@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 const Schema = mongoose.Schema;
 
@@ -36,11 +37,9 @@ const userSchema = new Schema({
   },
   course: {
     type: String,
-    required: [true, "Please, Enter your course"],
   },
   semester: {
     type: Number,
-    required: [true, "Please, Enter your semester"],
   },
   roll_no: {
     type: String,
@@ -56,6 +55,8 @@ const userSchema = new Schema({
       required: true,
     },
   },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 });
 
 //runs before the "save" operation,  a common way to securely store user passwords in a database.
@@ -71,5 +72,18 @@ userSchema.methods.getJWTToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
   });
+};
+
+//generating password reset token
+
+userSchema.methods.getResetPasswordToken = function () {
+
+  const resetToken = crypto.randomBytes(20).toString("hex");
+
+  this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+  return resetToken;
 };
 module.exports = mongoose.model("User", userSchema);

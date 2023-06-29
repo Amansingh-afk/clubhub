@@ -1,10 +1,12 @@
 const ErrorHandler = require("../utils/errorhandler");
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 
+const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
 const User = require("../models/userModel");
 const sendToken = require("../utils/jwttoken");
+const sendEmail = require("../utils/sendmail");
 
 // Create user
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
@@ -30,21 +32,21 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 
 // Login user
 exports.loginUser = catchAsyncErrors(async (req, res, next) => {
-  const { username, email, password } = req.body;
-  let user;
-  if (username) {
-    user = await User.findOne({ username }).select("+password");
-  } else if (email) {
-    user = await User.findOne({ email }).select("+password");
-  }
+  const { username, password } = req.body;
+
+  const user = await User.findOne({ username }).select("+password");
 
   if (!user) {
-    return next(new ErrorHandler("Invalid Credentials", 401));
+    return next(
+      new ErrorHandler("Invalid Credentials, Please try again!", 401)
+    );
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    return next(new ErrorHandler("Invalid Credentials", 401));
+    return next(
+      new ErrorHandler("Invalid Credentials, Please try again!", 401)
+    );
   }
 
   sendToken(user, 200, res);
@@ -52,7 +54,7 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
 
 // Logout
 exports.logout = catchAsyncErrors(async (req, res, next) => {
-  res.cookie("token",null),
+  res.cookie("token", null),
     {
       expires: new Date(Date.now()),
       httpOnly: true,
@@ -64,6 +66,76 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
   });
 });
 // forgot password
+exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+  
+  if (!user) {
+    return next(new ErrorHandler("user not found", 404));
+  }
+
+  //resetPassword token
+  const resetToken = user.getResetPasswordToken();
+
+  await user.save({ validateBeforeSave: false });
+
+  const resetPasswordUrl = `${req.protocol}://localhost:3000/password/reset/${resetToken}`;
+
+  const message = `Your password reset token is: \n\n ${resetPasswordUrl} \n\nIf you have not requested this email then, please igonore it`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: `Clubhub Password recovery`,
+      message,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Email sent to ${user.email} successfully`,
+    });
+  } catch (error) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save({ validateBeforeSave: false });
+
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
+
+// resetpsswrd token
+exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.param.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(
+      new ErrorHandler(
+        "Reset Password token is invalid or has been expired",
+        400
+      )
+    );
+  }
+
+  if (req.body.password != req.body.confirmPassword) {
+    return next(new ErrorHandler("Password does not match", 400));
+  }
+
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  sendToken(user, 200, res);
+});
 
 // Get user details, profile details
 exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {

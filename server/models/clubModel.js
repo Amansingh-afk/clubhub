@@ -23,6 +23,10 @@ const clubSchema = new Schema({
       required: true,
     },
   },
+  // created_at:{
+  //   type: Date,
+  //   default: Date.now,
+  // }
 });
 
 module.exports = mongoose.model("Club", clubSchema);

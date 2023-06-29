@@ -18,6 +18,20 @@ const eventSchema = new Schema({
     type: Date,
     required: true,
   },
+  event_type: {
+    type: String,
+    required: true,
+    enum: ["individual", "team"],
+    default: "individual",
+  },
+  has_completed: {
+    type: Boolean,
+    default: false,
+  },
+  created_at: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model("Event", eventSchema);

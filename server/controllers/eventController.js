@@ -1,19 +1,22 @@
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
+const ErrorHandler = require("../utils/errorhandler");
 
 const User = require("../models/userModel");
 const Club = require("../models/clubModel");
 const Event = require("../models/eventModel");
+const Team = require("../models/teamModel");
 const Participant = require("../models/participantModel");
-const ErrorHandler = require("../utils/errorhandler");
 
 // create event
 exports.createEvent = catchAsyncErrors(async (req, res, next) => {
-  const { name, club_id, description, scheduled_date } = req.body;
+  const { name, club_id, description, scheduled_date, event_type } = req.body;
+
   const event = await Event.create({
     name,
     club_id,
     description,
     scheduled_date,
+    event_type,
   });
 
   res.status(201).json({
@@ -47,6 +50,12 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
     return res.status(404).json({ error: "Event not found." });
   }
 
+  let team = [];
+  if (event.event_type === "team") {
+    team = await Team.find({ event_id: eventId })
+      .populate("created_by", "name roll_no")
+      .exec();
+  }
   const club = await Club.findOne({ _id: event.club_id }).exec();
 
   if (!club) {
@@ -85,16 +94,17 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
     hasParticipated,
     event: formattedEvent,
     participants: participantData,
+    team,
   });
 });
 
 // update event
 exports.updateEvent = catchAsyncErrors(async (req, res, next) => {
-  const { name, description, scheduled_date } = req.body;
+  const { name, description, scheduled_date, event_type } = req.body;
 
   const event = await Event.findByIdAndUpdate(
     req.params.eventId,
-    { name, description, scheduled_date },
+    { name, description, scheduled_date, event_type },
     {
       new: true,
       runValidators: true,
@@ -194,6 +204,6 @@ exports.removeParticipant = catchAsyncErrors(async (req, res, next) => {
   await Participant.findOneAndDelete({ user_id: userId, event_id: eventId });
   res.status(200).json({
     success: true,
-    msg: 'yes'
+    msg: "yes",
   });
 });

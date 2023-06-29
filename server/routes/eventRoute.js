@@ -11,6 +11,7 @@ const {
   removeParticipant,
 } = require("../controllers/eventController");
 const { isLoggedIn, authorizedRoles } = require("../middlewares/auth");
+const { createTeam } = require("../controllers/teamController");
 
 const router = express.Router();
 
@@ -35,4 +36,6 @@ router
 router.route("/event/leave/:eventId").delete(isLoggedIn, leaveEvent);
 
 router.route("/event/remove").delete(isLoggedIn, removeParticipant);
+
+router.route("/event/create/team").post(isLoggedIn, authorizedRoles('student'), createTeam);
 module.exports = router;
