@@ -9,9 +9,10 @@ const {
   joinEvent,
   leaveEvent,
   removeParticipant,
+  setEventAsCompleted,
 } = require("../controllers/eventController");
 const { isLoggedIn, authorizedRoles } = require("../middlewares/auth");
-const { createTeam } = require("../controllers/teamController");
+const { createTeam, joinTeam } = require("../controllers/teamController");
 
 const router = express.Router();
 
@@ -29,6 +30,8 @@ router
 
 router.route("/events").get(isLoggedIn, getAllEvents);
 
+router.route("/club/event/completed/:eventId").put(isLoggedIn, authorizedRoles("admin"), setEventAsCompleted);
+
 router
   .route("/event/join")
   .post(isLoggedIn, authorizedRoles("student"), joinEvent);
@@ -38,4 +41,5 @@ router.route("/event/leave/:eventId").delete(isLoggedIn, leaveEvent);
 router.route("/event/remove").delete(isLoggedIn, removeParticipant);
 
 router.route("/event/create/team").post(isLoggedIn, authorizedRoles('student'), createTeam);
+router.route("/event/join/team").post(isLoggedIn, authorizedRoles("student"), joinTeam);
 module.exports = router;

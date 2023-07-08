@@ -12,6 +12,8 @@ const {
   logout,
   forgotPassword,
   resetPassword,
+  globalSearch,
+  deleteAccount,
 } = require("../controllers/userController");
 const { isLoggedIn, authorizedRoles } = require("../middlewares/auth");
 
@@ -25,6 +27,7 @@ router.route("/logout").get(isLoggedIn, logout);
 router.route("/me").get(isLoggedIn, getUserDetails);
 router.route("/password/update").put(isLoggedIn, updatePassword);
 router.route("/me/update").put(isLoggedIn, updateProfile);
+router.route('/delete').delete(isLoggedIn, deleteAccount);
 // super admin routes
 router
   .route("/super-admin/users")
@@ -34,5 +37,7 @@ router
   .get(isLoggedIn, authorizedRoles("super_admin"), getSingleUser)
   .put(isLoggedIn, authorizedRoles("super_admin"), updateUserRole)
   .delete(isLoggedIn, authorizedRoles("super_admin"), deleteuser);
+
+  router.route("/search").get(isLoggedIn, globalSearch);
 
 module.exports = router;

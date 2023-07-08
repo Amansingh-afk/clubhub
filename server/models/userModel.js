@@ -39,7 +39,7 @@ const userSchema = new Schema({
     type: String,
   },
   semester: {
-    type: Number,
+    type: String,
   },
   roll_no: {
     type: String,

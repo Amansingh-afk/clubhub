@@ -63,16 +63,27 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
   }
   const isAdmin = club.admin_id == userId;
 
-  const participants = await Participant.find({ event_id: eventId }).exec();
+  const participants = await Participant.find({
+    event_id: eventId,
+    $or: [
+      { team_id: { $ne: null } }, // Fetch participants for team events
+      { team_id: null }, // Fetch participants for individual event
+    ],
+  })
+    .populate("team_id", "name")
+    .populate("user_id", "")
+    .exec();
 
-  const participantUserIds = participants.map(
-    (participant) => participant.user_id
-  );
+  const participantData = participants.map((participant) => {
+    const { user_id, team_id } = participant;
+    const userData = user_id._doc; // Get all fields of the user
+    const teamName = team_id ? team_id.name : null; // Get the team name if available
 
-  const participantData = await User.find({
-    _id: { $in: participantUserIds },
-  }).exec();
-
+    return {
+      ...userData,
+      team_name: teamName,
+    };
+  });
   const formattedDate = event.scheduled_date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -86,8 +97,9 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
   };
 
   const hasParticipated = participants.some(
-    (participant) => participant.user_id.toString() === userId
+    (participant) => participant.user_id._id.toString() === userId
   );
+
   return res.status(200).json({
     success: true,
     isAdmin,
@@ -122,11 +134,30 @@ exports.deleteEvent = catchAsyncErrors(async (req, res, next) => {
   const event = await Event.findById(req.params.eventId);
   if (!event) {
     return next(
-      new ErrorHandler(`Event doesn't exist with id: ${req.params.event - id}`)
+      new ErrorHandler(`Event doesn't exist with id: ${req.params.eventId}`)
     );
   }
+  const participants = await Participant.deleteMany({
+    event_id: req.params.eventId,
+  });
+
+  const teams = await Team.deleteMany({ event_id: req.params.eventId });
 
   await event.remove();
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+// set event as completed
+exports.setEventAsCompleted = catchAsyncErrors(async (req, res, next) => {
+  const { isCompleted } = req.body;
+  await Event.findByIdAndUpdate(
+    req.params.eventId,
+    { has_completed: isCompleted },
+    { new: true, runValidators: true, useFindAndModify: false }
+  );
 
   res.status(200).json({
     success: true,
@@ -152,6 +183,7 @@ exports.getAllEvents = catchAsyncErrors(async (req, res, next) => {
         club_name: club ? club.name : null,
         scheduled_date: formattedDate,
         description: event.description,
+        event_type: event.event_type,
       };
     })
   );
@@ -171,7 +203,7 @@ exports.joinEvent = catchAsyncErrors(async (req, res, next) => {
   });
 
   if (participant) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       error: "Already participated in this event.",
     });
@@ -193,6 +225,7 @@ exports.leaveEvent = catchAsyncErrors(async (req, res, next) => {
   const eventId = req.params.eventId;
 
   await Participant.findOneAndDelete({ user_id: userId, event_id: eventId });
+
   res.status(200).json({
     success: true,
   });

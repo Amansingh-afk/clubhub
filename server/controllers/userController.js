@@ -5,13 +5,32 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
 const User = require("../models/userModel");
+const Event = require("../models/eventModel");
+const Club = require("../models/clubModel");
 const sendToken = require("../utils/jwttoken");
 const sendEmail = require("../utils/sendmail");
-
+const ApiFeatures = require("../utils/apifeatures");
 // Create user
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const { fullname, username, email, password, course, semester, roll_no } =
     req.body;
+
+  const existingUsername = await User.findOne({ username });
+
+  if (existingUsername) {
+    return next(
+      new ErrorHandler(
+        "Username already exists. Please choose a different username.",
+        400
+      )
+    );
+  }
+
+  const existingEmail = await User.findOne({email});
+
+  if(existingEmail){
+    return next(new ErrorHandler("Email already exists. Please use another email."))
+  }
 
   const user = await User.create({
     name: fullname,
@@ -22,8 +41,8 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     semester,
     roll_no,
     avatar: {
-      public_id: "this is public id",
-      url: "avatar_url",
+      public_id: "profileImg",
+      url: "https://www.pngarts.com/files/10/Default-Profile-Picture-Download-PNG-Image.png",
     },
   });
 
@@ -68,7 +87,7 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
 // forgot password
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
-  
+
   if (!user) {
     return next(new ErrorHandler("user not found", 404));
   }
@@ -107,7 +126,7 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   const resetPasswordToken = crypto
     .createHash("sha256")
-    .update(req.param.token)
+    .update(req.params.token)
     .digest("hex");
 
   const user = await User.findOne({
@@ -192,6 +211,20 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+exports.deleteAccount = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return next(new ErrorHandler("User does not exist."));
+  }
+
+  await user.remove();
+
+  return res.status(200).json({
+    success: true,
+    message: "Account deleted successfully !",
+  });
+});
 // Get all user -- super admin
 exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
   const users = await User.find();
@@ -250,4 +283,27 @@ exports.deleteuser = catchAsyncErrors(async (req, res, next) => {
     success: true,
     message: "User deleted successfully",
   });
+});
+
+exports.globalSearch = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { keyword } = req.query;
+
+    const eventsQuery = Event.find();
+    const clubsQuery = Club.find();
+
+    const events = new ApiFeatures(eventsQuery, req.query).search();
+    const clubs = new ApiFeatures(clubsQuery, req.query).search();
+
+    const [eventsResults, clubsResults] = await Promise.all([
+      events.query,
+      clubs.query,
+    ]);
+
+    const results = [...eventsResults, ...clubsResults];
+    res.json(results);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
