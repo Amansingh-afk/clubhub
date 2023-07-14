@@ -12,17 +12,11 @@ exports.createClub = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findOne({ username: adminUsername });
 
   if (!user) {
-    return res.status(400).json({
-      success: false,
-      error: "User doesn't exist !!",
-    });
+    return next(new ErrorHandler("User doesn't exist !!", 400));
   }
   // Check if the user is already an admin of a club
   if (await Club.exists({ admin_id: user._id })) {
-    return res.status(400).json({
-      success: false,
-      error: "user is already an admin of a club.",
-    });
+    return next(new ErrorHandler("user is already an admin of a club.", 400));
   }
 
   user.role = "admin";
@@ -70,7 +64,7 @@ exports.getClubData = catchAsyncErrors(async (req, res, next) => {
 
   const members = await Member.find({ club_id: clubId }).exec();
 
-  const memberUserIds = members.map(member => member.user_id);
+  const memberUserIds = members.map((member) => member.user_id);
 
   const memberData = await User.find({ _id: { $in: memberUserIds } }).exec();
 
@@ -81,17 +75,27 @@ exports.getClubData = catchAsyncErrors(async (req, res, next) => {
     username: admin.username,
   };
 
-  const isMember = members.some(member => member.user_id.toString() === userId);
+  const isMember = members.some(
+    (member) => member.user_id.toString() === userId
+  );
 
   res.status(200).json({ club, members: memberData, isMember });
 });
-
 
 // update club detail
 exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
   const { name, adminUsername, description, banner } = req.body;
 
   const user = await User.findOne({ username: adminUsername });
+
+  if (!user) {
+    return next(new ErrorHandler("Username doesn't exist !! dummy", 400));
+  }
+
+  // Check if the user is already an admin of a club
+  if (await Club.exists({ admin_id: user._id, _id: { $ne: req.params.clubId } })) {
+    return next(new ErrorHandler("user is already an admin of a club.", 400));
+  }
 
   const newClubData = {
     name: name,
@@ -152,4 +156,3 @@ exports.getAllClubs = catchAsyncErrors(async (req, res, next) => {
     clubs: clubsWithAdminName,
   });
 });
-
