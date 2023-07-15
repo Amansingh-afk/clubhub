@@ -93,8 +93,18 @@ exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
   }
 
   // Check if the user is already an admin of a club
-  if (await Club.exists({ admin_id: user._id, _id: { $ne: req.params.clubId } })) {
+  if (
+    await Club.exists({ admin_id: user._id, _id: { $ne: req.params.clubId } })
+  ) {
     return next(new ErrorHandler("user is already an admin of a club.", 400));
+  }
+
+  const club = await Club.findById(req.params.clubId);
+
+  if (club.admin_id !== user._id) {
+    const previousAdmin = await User.findById(club.admin_id);
+    previousAdmin.role = "student";
+    await previousAdmin.save();
   }
 
   const newClubData = {
@@ -103,7 +113,11 @@ exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
     description,
     banner,
   };
-  const club = await Club.findByIdAndUpdate(req.params.clubId, newClubData, {
+
+  user.role = "admin";
+  await user.save();
+
+  await Club.findByIdAndUpdate(req.params.clubId, newClubData, {
     new: true,
     runValidators: true,
     useFindAndModify: false,

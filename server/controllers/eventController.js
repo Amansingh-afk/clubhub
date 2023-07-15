@@ -166,7 +166,7 @@ exports.setEventAsCompleted = catchAsyncErrors(async (req, res, next) => {
 
 // get all events
 exports.getAllEvents = catchAsyncErrors(async (req, res, next) => {
-  const events = await Event.find();
+  const events = await Event.find().sort({created_at: -1});
 
   const formattedEvents = await Promise.all(
     events.map(async (event) => {

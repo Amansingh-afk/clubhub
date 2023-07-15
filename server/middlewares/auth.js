@@ -1,4 +1,4 @@
-const ErrorHandler = require("../../../Ecom/backend/utils/errorhandler");
+const ErrorHandler = require("../utils/errorhandler");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const catchAsyncErrors = require("./catchAsyncErrors");
