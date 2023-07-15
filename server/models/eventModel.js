@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Schema = new mongoose.Schema();
+const Schema = mongoose.Schema;
 
 const eventSchema = new Schema({
   name: {
@@ -17,6 +17,20 @@ const eventSchema = new Schema({
   scheduled_date: {
     type: Date,
     required: true,
+  },
+  event_type: {
+    type: String,
+    required: true,
+    enum: ["individual", "team"],
+    default: "individual",
+  },
+  has_completed: {
+    type: Boolean,
+    default: false,
+  },
+  created_at: {
+    type: Date,
+    default: Date.now,
   },
 });
 
