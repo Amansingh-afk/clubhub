@@ -18,4 +18,5 @@
 ### Getting Started
 1. Clone the repository
 2. Run npm install to install dependencies
-3. Run npm start to start the development server
+3. run node server/config/seed.js to seed the database.
+4. Run npm start to start the development server

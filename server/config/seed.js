@@ -26,7 +26,7 @@ db.once("open", async () => {
         phone_no: 1234567890,
         avatar: {
           public_id: "sms--logo",
-          url: "https://example.com/avatar/johndoe.jpg",
+          url: "https://www.pngarts.com/files/10/Default-Profile-Picture-Download-PNG-Image.png",
         },
       },
       {
@@ -38,7 +38,7 @@ db.once("open", async () => {
         phone_no: 1234567890,
         avatar: {
           public_id: "sms--logo",
-          url: "https://example.com/avatar/johndoe.jpg",
+          url: "https://www.pngarts.com/files/10/Default-Profile-Picture-Download-PNG-Image.png",
         },
       },
     ];
