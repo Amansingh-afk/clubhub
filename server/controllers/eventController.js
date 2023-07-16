@@ -74,16 +74,18 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
     .populate("user_id", "")
     .exec();
 
-  const participantData = participants.map((participant) => {
-    const { user_id, team_id } = participant;
-    const userData = user_id._doc; // Get all fields of the user
-    const teamName = team_id ? team_id.name : null; // Get the team name if available
+  const participantData = participants
+    .filter((participant) => participant.user_id !== null)
+    .map((participant) => {
+      const { user_id, team_id } = participant;
+      const userData = user_id._doc; // Get all fields of the user
+      const teamName = team_id ? team_id.name : null; // Get the team name if available
 
-    return {
-      ...userData,
-      team_name: teamName,
-    };
-  });
+      return {
+        ...userData,
+        team_name: teamName,
+      };
+    });
   const formattedDate = event.scheduled_date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -96,9 +98,9 @@ exports.getEventDetail = catchAsyncErrors(async (req, res, next) => {
     scheduled_date: formattedDate,
   };
 
-  const hasParticipated = participants.some(
-    (participant) => participant.user_id._id.toString() === userId
-  );
+  const hasParticipated = participants
+    .filter((participant) => participant.user_id !== null)
+    .some((participant) => participant.user_id._id.toString() === userId);
 
   return res.status(200).json({
     success: true,
@@ -166,7 +168,7 @@ exports.setEventAsCompleted = catchAsyncErrors(async (req, res, next) => {
 
 // get all events
 exports.getAllEvents = catchAsyncErrors(async (req, res, next) => {
-  const events = await Event.find().sort({created_at: -1});
+  const events = await Event.find().sort({ created_at: -1 });
 
   const formattedEvents = await Promise.all(
     events.map(async (event) => {
