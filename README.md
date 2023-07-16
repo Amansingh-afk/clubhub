@@ -21,21 +21,24 @@ To get started with the backend, follow these steps:
    ```git clone https://github.com/Amansingh-afk/clubhub.git ```
    
 2. Install the dependencies:
-```
-cd clubhub
-npm install
-```
+    
+    ```
+    cd clubhub
+    npm install
+    ```
 
 3. Seed the databse
+
     `node server/config/seed.js`
    
 4. Set up the environment variables:
 
   Rename the .env.example file to .env.
   Modify the .env file to include your configuration settings (such as MongoDB connection string, JWT secret, etc.).
-  Start the server:
 
-`npm start`
+5. Start the server:
+
+  `npm start`
   The server will start running on `http://localhost:8000`. You can test the API endpoints using a tool like Postman.
 
 ### Folder Structure
