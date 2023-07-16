@@ -19,10 +19,7 @@ exports.subscribeMembership = catchAsyncErrors(async (req, res, next) => {
       success: true,
     });
   } else {
-    res.status(400).json({
-      success: false,
-      error: "Already a member!",
-    });
+    return next(new ErrorHandler("Already a member !!"));
   }
 });
 

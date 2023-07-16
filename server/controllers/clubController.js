@@ -39,10 +39,7 @@ exports.getClubDetail = catchAsyncErrors(async (req, res, next) => {
   const club = await Club.findOne({ admin_id: req.user.id }); // where admin_id = req.user.id
 
   if (!club) {
-    return res.status(404).json({
-      success: false,
-      error: "Club not found",
-    });
+    return next(new ErrorHandler("Already a member !!"));
   }
 
   res.status(200).json({
@@ -136,11 +133,11 @@ exports.deleteClub = catchAsyncErrors(async (req, res, next) => {
       new ErrorHandler(`club doesn't exist with club id: ${req.params.clubId}`)
     );
   }
-  await club.remove();
+  // await club.remove();
 
   res.status(200).json({
     success: true,
-    msg: "Club deleted successfully",
+    message: "Club deleted successfully",
   });
 });
 
