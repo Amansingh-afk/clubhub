@@ -18,7 +18,7 @@ To get started with the backend, follow these steps:
 
 1. Clone the repository:
 
-   ```git clone https://github.com/your-username/cms-backend.git ```
+   ```git clone https://github.com/Amansingh-afk/clubhub.git ```
    
 2. Install the dependencies:
 ```
