@@ -38,13 +38,19 @@ exports.createClub = catchAsyncErrors(async (req, res, next) => {
 exports.getClubDetail = catchAsyncErrors(async (req, res, next) => {
   const club = await Club.findOne({ admin_id: req.user.id }); // where admin_id = req.user.id
 
+  const admin = await User.findById(req.user.id);
+  const adminName = admin ? admin.name : "Unknown";
+
   if (!club) {
     return next(new ErrorHandler("Already a member !!"));
   }
 
   res.status(200).json({
     success: true,
-    club,
+    club: {
+      ...club._doc,
+      adminName: adminName,
+    },
   });
 });
 
@@ -81,7 +87,7 @@ exports.getClubData = catchAsyncErrors(async (req, res, next) => {
 
 // update club detail
 exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
-  const { name, adminUsername, description, banner } = req.body;
+  const { name, adminUsername, description, banner, isSuperAdmin } = req.body;
 
   const user = await User.findOne({ username: adminUsername });
 
@@ -98,7 +104,7 @@ exports.updateClubDetail = catchAsyncErrors(async (req, res, next) => {
 
   const club = await Club.findById(req.params.clubId);
 
-  if (club.admin_id !== user._id) {
+  if (isSuperAdmin) {
     const previousAdmin = await User.findById(club.admin_id);
     previousAdmin.role = "student";
     await previousAdmin.save();

@@ -12,10 +12,7 @@ const sendEmail = async (options) => {
     auth: {
       user: process.env.SMPT_MAIL,
       pass: process.env.SMPT_PASSWORD,
-    },
-    tls: {
-        ciphers: "SSLv3",
-      },
+    }
   });
 
   const mailOptions = {
