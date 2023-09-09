@@ -5,16 +5,16 @@ const app = express();
 const errorMiddleware = require("./middlewares/errors");
 const cookieParser = require("cookie-parser");
 
-app.use(express.json());
-app.use(cookieParser());
 
 const corsOptions = {
     origin: 'https://clubhub-sms.netlify.app',
     credentials: true,
-  };
-  
-  
+};
+
+
+app.use(express.json());
 app.use(cors(corsOptions));
+app.use(cookieParser());
 
 const user = require("./routes/userRoute");
 const club = require("./routes/clubRoute");
