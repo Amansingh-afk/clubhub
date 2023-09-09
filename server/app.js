@@ -7,6 +7,13 @@ const cookieParser = require("cookie-parser");
 
 app.use(express.json());
 app.use(cookieParser());
+
+const corsOptions = {
+    origin: 'https://clubhub-sms.netlify.app/',
+    credentials: true,
+  };
+  
+  
 app.use(cors());
 
 const user = require("./routes/userRoute");
