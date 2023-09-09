@@ -16,6 +16,8 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
+app.set("trust proxy",1); 
+
 const user = require("./routes/userRoute");
 const club = require("./routes/clubRoute");
 const event = require("./routes/eventRoute");
