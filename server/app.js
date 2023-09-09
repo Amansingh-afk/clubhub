@@ -7,8 +7,8 @@ const cookieParser = require("cookie-parser");
 
 
 const corsOptions = {
-    origin: 'https://clubhub-sms.netlify.app',
     credentials: true,
+    origin: 'https://clubhub-sms.netlify.app',
 };
 
 
