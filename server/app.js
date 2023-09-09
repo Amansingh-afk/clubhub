@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 const corsOptions = {
-    origin: 'https://clubhub-sms.netlify.app/',
+    origin: 'https://clubhub-sms.netlify.app',
     credentials: true,
   };
   
