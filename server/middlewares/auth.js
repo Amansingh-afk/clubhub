@@ -5,7 +5,6 @@ const catchAsyncErrors = require("./catchAsyncErrors");
 
 exports.isLoggedIn = catchAsyncErrors(async (req, res, next) => {
   const { token } = req.cookies;
-  console.log(req.headers);
   if (!token) {
     return next(
       new ErrorHandler(
