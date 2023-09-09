@@ -1,10 +1,13 @@
 const express = require("express");
+const cors = require('cors');
+
 const app = express();
 const errorMiddleware = require("./middlewares/errors");
 const cookieParser = require("cookie-parser");
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors());
 
 const user = require("./routes/userRoute");
 const club = require("./routes/clubRoute");
