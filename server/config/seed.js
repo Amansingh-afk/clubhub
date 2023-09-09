@@ -2,10 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const User = require("../models/userModel");
 
-mongoose.connect("mongodb://localhost/clubhub", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect("mongodb+srv://clubhub:t6ugwdhi@clubhub1.ehe7ety.mongodb.net/?retryWrites=true&w=majority", {});
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
