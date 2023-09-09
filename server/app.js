@@ -14,7 +14,7 @@ const corsOptions = {
   };
   
   
-app.use(cors());
+app.use(cors(corsOptions));
 
 const user = require("./routes/userRoute");
 const club = require("./routes/clubRoute");
